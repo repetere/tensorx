@@ -6,6 +6,7 @@ import range from 'lodash.range';
 /* fix for rollup */
 /* istanbul ignore next */
 const tf = (tensorflow__default) ? tensorflow__default : tensorflow;
+tf.setBackend('tensorflow');
 /**
  * Base class for tensorscript models
  * @interface TensorScriptModelInterface

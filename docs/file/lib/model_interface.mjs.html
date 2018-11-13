@@ -53,6 +53,7 @@ import &apos;@tensorflow/tfjs-node&apos;;
 /* fix for rollup */
 /* istanbul ignore next */
 const tf = (tensorflow.default) ? tensorflow.default : tensorflow;
+tf.setBackend(&apos;tensorflow&apos;);
 /**
  * Base class for tensorscript models
  * @interface TensorScriptModelInterface

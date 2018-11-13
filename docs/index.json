@@ -1665,7 +1665,7 @@
     "__docId__": 66,
     "kind": "file",
     "name": "lib/model_interface.mjs",
-    "content": "import * as tensorflow from '@tensorflow/tfjs';\r\nimport '@tensorflow/tfjs-node';\r\n/* fix for rollup */\r\n/* istanbul ignore next */\r\nconst tf = (tensorflow.default) ? tensorflow.default : tensorflow;\r\n/**\r\n * Base class for tensorscript models\r\n * @interface TensorScriptModelInterface\r\n * @property {Object} settings - tensorflow model hyperparameters\r\n * @property {Object} model - tensorflow model\r\n * @property {Object} tf - tensorflow / tensorflow-node / tensorflow-node-gpu\r\n * @property {Function} reshape - static reshape array function\r\n * @property {Function} getInputShape - static TensorScriptModelInterface\r\n */\r\nexport class TensorScriptModelInterface {\r\n  /**\r\n   * @param {Object} options - tensorflow model hyperparameters\r\n   * @param {Object} customTF - custom, overridale tensorflow / tensorflow-node / tensorflow-node-gpu\r\n   * @param {{model:Object,tf:Object,}} properties - extra instance properties\r\n   */\r\n  constructor(options = {}, properties = {}) {\r\n    /** @type {Object} */\r\n    this.settings = options;\r\n    /** @type {Object} */\r\n    this.model = properties.model;\r\n    /** @type {Object} */\r\n    this.tf = properties.tf || tf;\r\n    /** @type {Function} */\r\n    this.reshape = TensorScriptModelInterface.reshape;\r\n    /** @type {Function} */\r\n    this.getInputShape = TensorScriptModelInterface.getInputShape;\r\n    return this;\r\n  }\r\n  /**\r\n   * Reshapes an array\r\n   * @function\r\n   * @example \r\n   * const array = [ 0, 1, 1, 0, ];\r\n   * const shape = [2,2];\r\n   * TensorScriptModelInterface.reshape(array,shape) // => \r\n   * [\r\n   *   [ 0, 1, ],\r\n   *   [ 1, 0, ],\r\n   * ];\r\n   * @param {Array<number>} array - input array \r\n   * @param {Array<number>} shape - shape array \r\n   * @return {Array<Array<number>>} returns a matrix with the defined shape\r\n   */\r\n  /* istanbul ignore next */\r\n  static reshape(array, shape) {\r\n    const flatArray = flatten(array);\r\n   \r\n\r\n    function product (arr) {\r\n      return arr.reduce((prev, curr) => prev * curr);\r\n    }\r\n  \r\n    if (!Array.isArray(array) || !Array.isArray(shape)) {\r\n      throw new TypeError('Array expected');\r\n    }\r\n  \r\n    if (shape.length === 0) {\r\n      throw new DimensionError(0, product(size(array)), '!=');\r\n    }\r\n    let newArray;\r\n    let totalSize = 1;\r\n    const rows = shape[ 0 ];\r\n    for (let sizeIndex = 0; sizeIndex < shape.length; sizeIndex++) {\r\n      totalSize *= shape[sizeIndex];\r\n    }\r\n  \r\n    if (flatArray.length !== totalSize) {\r\n      throw new DimensionError(\r\n        product(shape),\r\n        product(size(array)),\r\n        '!='\r\n      );\r\n    }\r\n  \r\n    try {\r\n      newArray = _reshape(flatArray, shape);\r\n    } catch (e) {\r\n      if (e instanceof DimensionError) {\r\n        throw new DimensionError(\r\n          product(shape),\r\n          product(size(array)),\r\n          '!='\r\n        );\r\n      }\r\n      throw e;\r\n    }\r\n    if (newArray.length !== rows) throw new SyntaxError(`specified shape (${shape}) is compatible with input array or length (${array.length})`);\r\n\r\n    // console.log({ newArray ,});\r\n    return newArray;\r\n  }\r\n  /**\r\n   * Returns the shape of an input matrix\r\n   * @function\r\n   * @example \r\n   * const input = [\r\n   *   [ 0, 1, ],\r\n   *   [ 1, 0, ],\r\n   * ];\r\n   * TensorScriptModelInterface.getInputShape(input) // => [2,2]\r\n   * @see {https://stackoverflow.com/questions/10237615/get-size-of-dimensions-in-array}\r\n   * @param {Array<Array<number>>} matrix - input matrix \r\n   * @return {Array<number>} returns the shape of a matrix (e.g. [2,2])\r\n   */\r\n  static getInputShape(matrix=[]) {\r\n    if (Array.isArray(matrix) === false || !matrix[ 0 ] || !matrix[ 0 ].length || Array.isArray(matrix[ 0 ]) === false) throw new TypeError('input must be a matrix');\r\n    const dim = [];\r\n    const x_dimensions = matrix[ 0 ].length;\r\n    let vectors = matrix;\r\n    matrix.forEach(vector => {\r\n      if (vector.length !== x_dimensions) throw new SyntaxError('input must have the same length in each row');\r\n    });\r\n    for (;;) {\r\n      dim.push(vectors.length);\r\n      if (Array.isArray(vectors[0])) {\r\n        vectors = vectors[0];\r\n      } else {\r\n        break;\r\n      }\r\n    }\r\n    return dim;\r\n  }\r\n  /**\r\n   * Asynchronously trains tensorflow model, must be implemented by tensorscript class\r\n   * @abstract \r\n   * @param {Array<Array<number>>} x_matrix - independent variables\r\n   * @param {Array<Array<number>>} y_matrix - dependent variables\r\n   * @return {Object} returns trained tensorflow model \r\n   */\r\n  train(x_matrix, y_matrix) {\r\n    throw new ReferenceError('train method is not implemented');\r\n  }\r\n  /**\r\n   * Predicts new dependent variables\r\n   * @abstract \r\n   * @param {Array<Array<number>>|Array<number>} matrix - new test independent variables\r\n   * @return {{data: Promise}} returns tensorflow prediction \r\n   */\r\n  calculate(matrix) {\r\n    throw new ReferenceError('calculate method is not implemented');\r\n  }\r\n  /**\r\n   * Loads a saved tensoflow / keras model\r\n   * @param {Object} options - tensorflow load model options\r\n   * @return {Object} tensorflow model\r\n   */\r\n  async loadModel(options) {\r\n    this.model = await this.tf.loadModel(options);\r\n    return this.model;\r\n  }\r\n  /**\r\n   * Returns prediction values from tensorflow model\r\n   * @param {Array<Array<number>>|Array<number>} input_matrix - new test independent variables \r\n   * @param {Boolean} [options.json=true] - return object instead of typed array\r\n   * @param {Boolean} [options.probability=true] - return real values instead of integers\r\n   * @return {Array<number>|Array<Array<number>>} predicted model values\r\n   */\r\n  async predict(input_matrix, options = {}) {\r\n    if (!input_matrix || Array.isArray(input_matrix)===false) throw new Error('invalid input matrix');\r\n    const x_matrix = (Array.isArray(input_matrix[ 0 ]))\r\n      ? input_matrix\r\n      : [\r\n        input_matrix,\r\n      ];\r\n    const config = Object.assign({\r\n      json: true,\r\n      probability: true,\r\n    }, options);\r\n    return this.calculate(x_matrix)\r\n      .data()\r\n      .then(predictions => {\r\n        if (config.json === false) {\r\n          return predictions;\r\n        } else {\r\n          const shape = [x_matrix.length, this.yShape[ 1 ], ];\r\n          const predictionValues = (options.probability === false) ? Array.from(predictions).map(Math.round) : Array.from(predictions);\r\n          return this.reshape(predictionValues, shape);\r\n        }\r\n      })\r\n      .catch(e => {\r\n        throw e; \r\n      });\r\n  }\r\n}\r\n\r\n/**\r\n * Calculate the size of a multi dimensional array.\r\n * This function checks the size of the first entry, it does not validate\r\n * whether all dimensions match. (use function `validate` for that) (from math.js)\r\n * @param {Array} x\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n * @ignore\r\n * @return {Number[]} size\r\n */\r\n/* istanbul ignore next */\r\nexport function size (x) {\r\n  let s = [];\r\n\r\n  while (Array.isArray(x)) {\r\n    s.push(x.length);\r\n    x = x[0];\r\n  }\r\n\r\n  return s;\r\n}\r\n/**\r\n * Iteratively re-shape a multi dimensional array to fit the specified dimensions (from math.js)\r\n * @param {Array} array           Array to be reshaped\r\n * @param {Array.<number>} sizes  List of sizes for each dimension\r\n * @returns {Array}               Array whose data has been formatted to fit the\r\n *                                specified dimensions\r\n * @ignore\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n */\r\n/* istanbul ignore next */\r\nexport function _reshape(array, sizes) {\r\n  // testing if there are enough elements for the requested shape\r\n  var tmpArray = array;\r\n  var tmpArray2;\r\n  // for each dimensions starting by the last one and ignoring the first one\r\n  for (var sizeIndex = sizes.length - 1; sizeIndex > 0; sizeIndex--) {\r\n    var size = sizes[sizeIndex];\r\n    tmpArray2 = [];\r\n\r\n    // aggregate the elements of the current tmpArray in elements of the requested size\r\n    var length = tmpArray.length / size;\r\n    for (var i = 0; i < length; i++) {\r\n      tmpArray2.push(tmpArray.slice(i * size, (i + 1) * size));\r\n    }\r\n    // set it as the new tmpArray for the next loop turn or for return\r\n    tmpArray = tmpArray2;\r\n  }\r\n  return tmpArray;\r\n}\r\n\r\n/**\r\n * Create a range error with the message:\r\n *     'Dimension mismatch (<actual size> != <expected size>)' (from math.js)\r\n * @param {number | number[]} actual        The actual size\r\n * @param {number | number[]} expected      The expected size\r\n * @param {string} [relation='!=']          Optional relation between actual\r\n *                                          and expected size: '!=', '<', etc.\r\n * @extends RangeError\r\n * @ignore\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n */\r\n/* istanbul ignore next */\r\nexport class DimensionError extends RangeError {\r\n  constructor(actual, expected, relation) {\r\n    /* istanbul ignore next */\r\n    const message = 'Dimension mismatch (' + (Array.isArray(actual) ? ('[' + actual.join(', ') + ']') : actual) + ' ' + ('!=') + ' ' + (Array.isArray(expected) ? ('[' + expected.join(', ') + ']') : expected) +  ')';\r\n    super(message);\r\n  \r\n    this.actual = actual;\r\n    this.expected = expected;\r\n    this.relation = relation;\r\n    // this.stack = (new Error()).stack\r\n    this.message = message;\r\n    this.name = 'DimensionError';\r\n    this.isDimensionError = true;\r\n  }\r\n}\r\n\r\n/**\r\n * Flatten a multi dimensional array, put all elements in a one dimensional\r\n * array\r\n * @param {Array} array   A multi dimensional array\r\n * @ignore\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n * @return {Array}        The flattened array (1 dimensional)\r\n */\r\n/* istanbul ignore next */\r\nexport function flatten (array) {\r\n  /* istanbul ignore next */\r\n  if (!Array.isArray(array)) {\r\n    // if not an array, return as is\r\n    /* istanbul ignore next */\r\n    return array;\r\n  }\r\n  let flat = [];\r\n  \r\n  /* istanbul ignore next */\r\n  array.forEach(function callback (value) {\r\n    if (Array.isArray(value)) {\r\n      value.forEach(callback); // traverse through sub-arrays recursively\r\n    } else {\r\n      flat.push(value);\r\n    }\r\n  });\r\n\r\n  return flat;\r\n}",
+    "content": "import * as tensorflow from '@tensorflow/tfjs';\r\nimport '@tensorflow/tfjs-node';\r\n/* fix for rollup */\r\n/* istanbul ignore next */\r\nconst tf = (tensorflow.default) ? tensorflow.default : tensorflow;\r\ntf.setBackend('tensorflow');\r\n/**\r\n * Base class for tensorscript models\r\n * @interface TensorScriptModelInterface\r\n * @property {Object} settings - tensorflow model hyperparameters\r\n * @property {Object} model - tensorflow model\r\n * @property {Object} tf - tensorflow / tensorflow-node / tensorflow-node-gpu\r\n * @property {Function} reshape - static reshape array function\r\n * @property {Function} getInputShape - static TensorScriptModelInterface\r\n */\r\nexport class TensorScriptModelInterface {\r\n  /**\r\n   * @param {Object} options - tensorflow model hyperparameters\r\n   * @param {Object} customTF - custom, overridale tensorflow / tensorflow-node / tensorflow-node-gpu\r\n   * @param {{model:Object,tf:Object,}} properties - extra instance properties\r\n   */\r\n  constructor(options = {}, properties = {}) {\r\n    /** @type {Object} */\r\n    this.settings = options;\r\n    /** @type {Object} */\r\n    this.model = properties.model;\r\n    /** @type {Object} */\r\n    this.tf = properties.tf || tf;\r\n    /** @type {Function} */\r\n    this.reshape = TensorScriptModelInterface.reshape;\r\n    /** @type {Function} */\r\n    this.getInputShape = TensorScriptModelInterface.getInputShape;\r\n    return this;\r\n  }\r\n  /**\r\n   * Reshapes an array\r\n   * @function\r\n   * @example \r\n   * const array = [ 0, 1, 1, 0, ];\r\n   * const shape = [2,2];\r\n   * TensorScriptModelInterface.reshape(array,shape) // => \r\n   * [\r\n   *   [ 0, 1, ],\r\n   *   [ 1, 0, ],\r\n   * ];\r\n   * @param {Array<number>} array - input array \r\n   * @param {Array<number>} shape - shape array \r\n   * @return {Array<Array<number>>} returns a matrix with the defined shape\r\n   */\r\n  /* istanbul ignore next */\r\n  static reshape(array, shape) {\r\n    const flatArray = flatten(array);\r\n   \r\n\r\n    function product (arr) {\r\n      return arr.reduce((prev, curr) => prev * curr);\r\n    }\r\n  \r\n    if (!Array.isArray(array) || !Array.isArray(shape)) {\r\n      throw new TypeError('Array expected');\r\n    }\r\n  \r\n    if (shape.length === 0) {\r\n      throw new DimensionError(0, product(size(array)), '!=');\r\n    }\r\n    let newArray;\r\n    let totalSize = 1;\r\n    const rows = shape[ 0 ];\r\n    for (let sizeIndex = 0; sizeIndex < shape.length; sizeIndex++) {\r\n      totalSize *= shape[sizeIndex];\r\n    }\r\n  \r\n    if (flatArray.length !== totalSize) {\r\n      throw new DimensionError(\r\n        product(shape),\r\n        product(size(array)),\r\n        '!='\r\n      );\r\n    }\r\n  \r\n    try {\r\n      newArray = _reshape(flatArray, shape);\r\n    } catch (e) {\r\n      if (e instanceof DimensionError) {\r\n        throw new DimensionError(\r\n          product(shape),\r\n          product(size(array)),\r\n          '!='\r\n        );\r\n      }\r\n      throw e;\r\n    }\r\n    if (newArray.length !== rows) throw new SyntaxError(`specified shape (${shape}) is compatible with input array or length (${array.length})`);\r\n\r\n    // console.log({ newArray ,});\r\n    return newArray;\r\n  }\r\n  /**\r\n   * Returns the shape of an input matrix\r\n   * @function\r\n   * @example \r\n   * const input = [\r\n   *   [ 0, 1, ],\r\n   *   [ 1, 0, ],\r\n   * ];\r\n   * TensorScriptModelInterface.getInputShape(input) // => [2,2]\r\n   * @see {https://stackoverflow.com/questions/10237615/get-size-of-dimensions-in-array}\r\n   * @param {Array<Array<number>>} matrix - input matrix \r\n   * @return {Array<number>} returns the shape of a matrix (e.g. [2,2])\r\n   */\r\n  static getInputShape(matrix=[]) {\r\n    if (Array.isArray(matrix) === false || !matrix[ 0 ] || !matrix[ 0 ].length || Array.isArray(matrix[ 0 ]) === false) throw new TypeError('input must be a matrix');\r\n    const dim = [];\r\n    const x_dimensions = matrix[ 0 ].length;\r\n    let vectors = matrix;\r\n    matrix.forEach(vector => {\r\n      if (vector.length !== x_dimensions) throw new SyntaxError('input must have the same length in each row');\r\n    });\r\n    for (;;) {\r\n      dim.push(vectors.length);\r\n      if (Array.isArray(vectors[0])) {\r\n        vectors = vectors[0];\r\n      } else {\r\n        break;\r\n      }\r\n    }\r\n    return dim;\r\n  }\r\n  /**\r\n   * Asynchronously trains tensorflow model, must be implemented by tensorscript class\r\n   * @abstract \r\n   * @param {Array<Array<number>>} x_matrix - independent variables\r\n   * @param {Array<Array<number>>} y_matrix - dependent variables\r\n   * @return {Object} returns trained tensorflow model \r\n   */\r\n  train(x_matrix, y_matrix) {\r\n    throw new ReferenceError('train method is not implemented');\r\n  }\r\n  /**\r\n   * Predicts new dependent variables\r\n   * @abstract \r\n   * @param {Array<Array<number>>|Array<number>} matrix - new test independent variables\r\n   * @return {{data: Promise}} returns tensorflow prediction \r\n   */\r\n  calculate(matrix) {\r\n    throw new ReferenceError('calculate method is not implemented');\r\n  }\r\n  /**\r\n   * Loads a saved tensoflow / keras model\r\n   * @param {Object} options - tensorflow load model options\r\n   * @return {Object} tensorflow model\r\n   */\r\n  async loadModel(options) {\r\n    this.model = await this.tf.loadModel(options);\r\n    return this.model;\r\n  }\r\n  /**\r\n   * Returns prediction values from tensorflow model\r\n   * @param {Array<Array<number>>|Array<number>} input_matrix - new test independent variables \r\n   * @param {Boolean} [options.json=true] - return object instead of typed array\r\n   * @param {Boolean} [options.probability=true] - return real values instead of integers\r\n   * @return {Array<number>|Array<Array<number>>} predicted model values\r\n   */\r\n  async predict(input_matrix, options = {}) {\r\n    if (!input_matrix || Array.isArray(input_matrix)===false) throw new Error('invalid input matrix');\r\n    const x_matrix = (Array.isArray(input_matrix[ 0 ]))\r\n      ? input_matrix\r\n      : [\r\n        input_matrix,\r\n      ];\r\n    const config = Object.assign({\r\n      json: true,\r\n      probability: true,\r\n    }, options);\r\n    return this.calculate(x_matrix)\r\n      .data()\r\n      .then(predictions => {\r\n        if (config.json === false) {\r\n          return predictions;\r\n        } else {\r\n          const shape = [x_matrix.length, this.yShape[ 1 ], ];\r\n          const predictionValues = (options.probability === false) ? Array.from(predictions).map(Math.round) : Array.from(predictions);\r\n          return this.reshape(predictionValues, shape);\r\n        }\r\n      })\r\n      .catch(e => {\r\n        throw e; \r\n      });\r\n  }\r\n}\r\n\r\n/**\r\n * Calculate the size of a multi dimensional array.\r\n * This function checks the size of the first entry, it does not validate\r\n * whether all dimensions match. (use function `validate` for that) (from math.js)\r\n * @param {Array} x\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n * @ignore\r\n * @return {Number[]} size\r\n */\r\n/* istanbul ignore next */\r\nexport function size (x) {\r\n  let s = [];\r\n\r\n  while (Array.isArray(x)) {\r\n    s.push(x.length);\r\n    x = x[0];\r\n  }\r\n\r\n  return s;\r\n}\r\n/**\r\n * Iteratively re-shape a multi dimensional array to fit the specified dimensions (from math.js)\r\n * @param {Array} array           Array to be reshaped\r\n * @param {Array.<number>} sizes  List of sizes for each dimension\r\n * @returns {Array}               Array whose data has been formatted to fit the\r\n *                                specified dimensions\r\n * @ignore\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n */\r\n/* istanbul ignore next */\r\nexport function _reshape(array, sizes) {\r\n  // testing if there are enough elements for the requested shape\r\n  var tmpArray = array;\r\n  var tmpArray2;\r\n  // for each dimensions starting by the last one and ignoring the first one\r\n  for (var sizeIndex = sizes.length - 1; sizeIndex > 0; sizeIndex--) {\r\n    var size = sizes[sizeIndex];\r\n    tmpArray2 = [];\r\n\r\n    // aggregate the elements of the current tmpArray in elements of the requested size\r\n    var length = tmpArray.length / size;\r\n    for (var i = 0; i < length; i++) {\r\n      tmpArray2.push(tmpArray.slice(i * size, (i + 1) * size));\r\n    }\r\n    // set it as the new tmpArray for the next loop turn or for return\r\n    tmpArray = tmpArray2;\r\n  }\r\n  return tmpArray;\r\n}\r\n\r\n/**\r\n * Create a range error with the message:\r\n *     'Dimension mismatch (<actual size> != <expected size>)' (from math.js)\r\n * @param {number | number[]} actual        The actual size\r\n * @param {number | number[]} expected      The expected size\r\n * @param {string} [relation='!=']          Optional relation between actual\r\n *                                          and expected size: '!=', '<', etc.\r\n * @extends RangeError\r\n * @ignore\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n */\r\n/* istanbul ignore next */\r\nexport class DimensionError extends RangeError {\r\n  constructor(actual, expected, relation) {\r\n    /* istanbul ignore next */\r\n    const message = 'Dimension mismatch (' + (Array.isArray(actual) ? ('[' + actual.join(', ') + ']') : actual) + ' ' + ('!=') + ' ' + (Array.isArray(expected) ? ('[' + expected.join(', ') + ']') : expected) +  ')';\r\n    super(message);\r\n  \r\n    this.actual = actual;\r\n    this.expected = expected;\r\n    this.relation = relation;\r\n    // this.stack = (new Error()).stack\r\n    this.message = message;\r\n    this.name = 'DimensionError';\r\n    this.isDimensionError = true;\r\n  }\r\n}\r\n\r\n/**\r\n * Flatten a multi dimensional array, put all elements in a one dimensional\r\n * array\r\n * @param {Array} array   A multi dimensional array\r\n * @ignore\r\n * @see {https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}\r\n * @return {Array}        The flattened array (1 dimensional)\r\n */\r\n/* istanbul ignore next */\r\nexport function flatten (array) {\r\n  /* istanbul ignore next */\r\n  if (!Array.isArray(array)) {\r\n    // if not an array, return as is\r\n    /* istanbul ignore next */\r\n    return array;\r\n  }\r\n  let flat = [];\r\n  \r\n  /* istanbul ignore next */\r\n  array.forEach(function callback (value) {\r\n    if (Array.isArray(value)) {\r\n      value.forEach(callback); // traverse through sub-arrays recursively\r\n    } else {\r\n      flat.push(value);\r\n    }\r\n  });\r\n\r\n  return flat;\r\n}",
     "static": true,
     "longname": "/Users/yawjosephetse/Developer/github/repetere/tensorscript-node/lib/model_interface.mjs",
     "access": "public",
@@ -1700,7 +1700,7 @@
     "importPath": "tensorscript-node/lib/model_interface.mjs",
     "importStyle": "{TensorScriptModelInterface}",
     "description": "Base class for tensorscript models",
-    "lineNumber": 15,
+    "lineNumber": 16,
     "properties": [
       {
         "nullable": null,
@@ -1766,7 +1766,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#constructor",
     "access": "public",
     "description": "",
-    "lineNumber": 21,
+    "lineNumber": 22,
     "params": [
       {
         "nullable": null,
@@ -1809,7 +1809,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#settings",
     "access": "public",
     "description": null,
-    "lineNumber": 23,
+    "lineNumber": 24,
     "type": {
       "nullable": null,
       "types": [
@@ -1828,7 +1828,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#model",
     "access": "public",
     "description": null,
-    "lineNumber": 25,
+    "lineNumber": 26,
     "type": {
       "nullable": null,
       "types": [
@@ -1847,7 +1847,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#tf",
     "access": "public",
     "description": null,
-    "lineNumber": 27,
+    "lineNumber": 28,
     "type": {
       "nullable": null,
       "types": [
@@ -1866,7 +1866,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#reshape",
     "access": "public",
     "description": null,
-    "lineNumber": 29,
+    "lineNumber": 30,
     "type": {
       "nullable": null,
       "types": [
@@ -1885,7 +1885,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#getInputShape",
     "access": "public",
     "description": null,
-    "lineNumber": 31,
+    "lineNumber": 32,
     "type": {
       "nullable": null,
       "types": [
@@ -1909,7 +1909,7 @@
     "examples": [
       "const array = [ 0, 1, 1, 0, ];\nconst shape = [2,2];\nTensorScriptModelInterface.reshape(array,shape) // => \n[\n  [ 0, 1, ],\n  [ 1, 0, ],\n];"
     ],
-    "lineNumber": 50,
+    "lineNumber": 51,
     "unknown": [
       {
         "tagName": "@function",
@@ -1964,7 +1964,7 @@
     "see": [
       "{https://stackoverflow.com/questions/10237615/get-size-of-dimensions-in-array}"
     ],
-    "lineNumber": 110,
+    "lineNumber": 111,
     "unknown": [
       {
         "tagName": "@function",
@@ -2003,7 +2003,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#train",
     "access": "public",
     "description": "Asynchronously trains tensorflow model, must be implemented by tensorscript class",
-    "lineNumber": 135,
+    "lineNumber": 136,
     "params": [
       {
         "nullable": null,
@@ -2047,7 +2047,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#calculate",
     "access": "public",
     "description": "Predicts new dependent variables",
-    "lineNumber": 144,
+    "lineNumber": 145,
     "params": [
       {
         "nullable": null,
@@ -2081,7 +2081,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#loadModel",
     "access": "public",
     "description": "Loads a saved tensoflow / keras model",
-    "lineNumber": 152,
+    "lineNumber": 153,
     "params": [
       {
         "nullable": null,
@@ -2114,7 +2114,7 @@
     "longname": "lib/model_interface.mjs~TensorScriptModelInterface#predict",
     "access": "public",
     "description": "Returns prediction values from tensorflow model",
-    "lineNumber": 163,
+    "lineNumber": 164,
     "params": [
       {
         "nullable": null,
@@ -2177,7 +2177,7 @@
     "see": [
       "{https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}"
     ],
-    "lineNumber": 201,
+    "lineNumber": 202,
     "ignore": true,
     "params": [
       {
@@ -2217,7 +2217,7 @@
     "see": [
       "{https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}"
     ],
-    "lineNumber": 221,
+    "lineNumber": 222,
     "ignore": true,
     "unknown": [
       {
@@ -2271,7 +2271,7 @@
     "see": [
       "{https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}"
     ],
-    "lineNumber": 253,
+    "lineNumber": 254,
     "ignore": true,
     "params": [
       {
@@ -2323,7 +2323,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#constructor",
     "access": "public",
     "description": null,
-    "lineNumber": 254,
+    "lineNumber": 255,
     "undocument": true
   },
   {
@@ -2335,7 +2335,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#actual",
     "access": "public",
     "description": null,
-    "lineNumber": 259,
+    "lineNumber": 260,
     "undocument": true
   },
   {
@@ -2347,7 +2347,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#expected",
     "access": "public",
     "description": null,
-    "lineNumber": 260,
+    "lineNumber": 261,
     "undocument": true
   },
   {
@@ -2359,7 +2359,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#relation",
     "access": "public",
     "description": null,
-    "lineNumber": 261,
+    "lineNumber": 262,
     "undocument": true
   },
   {
@@ -2371,7 +2371,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#message",
     "access": "public",
     "description": null,
-    "lineNumber": 263,
+    "lineNumber": 264,
     "undocument": true
   },
   {
@@ -2383,7 +2383,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#name",
     "access": "public",
     "description": null,
-    "lineNumber": 264,
+    "lineNumber": 265,
     "undocument": true
   },
   {
@@ -2395,7 +2395,7 @@
     "longname": "lib/model_interface.mjs~DimensionError#isDimensionError",
     "access": "public",
     "description": null,
-    "lineNumber": 265,
+    "lineNumber": 266,
     "undocument": true
   },
   {
@@ -2415,7 +2415,7 @@
     "see": [
       "{https://github.com/josdejong/mathjs/blob/develop/src/utils/array.js}"
     ],
-    "lineNumber": 278,
+    "lineNumber": 279,
     "ignore": true,
     "params": [
       {

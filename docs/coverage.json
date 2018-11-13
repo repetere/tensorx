@@ -67,13 +67,13 @@
       "actualCount": 17,
       "undocumentLines": [
         5,
-        254,
-        259,
+        255,
         260,
         261,
-        263,
+        262,
         264,
-        265
+        265,
+        266
       ]
     },
     "lib/multiple_linear_regression.mjs": {
