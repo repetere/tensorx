@@ -1,0 +1,149 @@
+<!DOCTYPE html><html><head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">lib/deep_learning.mjs | TensorScript</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="//www.googletagmanager.com/gtag/js?id=UA-112697260-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'UA-112697260-2');
+  </script><meta name="description" content="Deep Learning Classification, Clustering, Time Series, Regression and Multi-Layered Perceptrons with Tensorflow"><meta property="og:type" content="website"><meta property="og:url" content="https://repetere.github.io/tensorscript"><meta property="og:site_name" content="TensorScript"><meta property="og:title" content="TensorScript"><meta property="og:image" content="https://repetere.ai/favicon.png"><meta property="og:description" content="Deep Learning Classification, Clustering, Time Series, Regression and Multi-Layered Perceptrons with Tensorflow"><meta property="og:author" content="https://github.com/repetere"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="TensorScript"><meta property="twitter:description" content="Deep Learning Classification, Clustering, Time Series, Regression and Multi-Layered Perceptrons with Tensorflow"><meta property="twitter:image" content="https://repetere.ai/favicon.png"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  <a href="./manual/index.html" data-ice="manualHeaderLink">Manual</a>
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/repetere/tensorscript"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/classification.mjs~DeepLearningClassification.html">DeepLearningClassification</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/deep_learning.mjs~BaseNeuralNetwork.html">BaseNeuralNetwork</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/logistic_regression.mjs~LogisticRegression.html">LogisticRegression</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/lstm_multivariate_time_series.mjs~LSTMMultivariateTimeSeries.html">LSTMMultivariateTimeSeries</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/lstm_time_series.mjs~LSTMTimeSeries.html">LSTMTimeSeries</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/model_interface.mjs~TensorScriptModelInterface.html">TensorScriptModelInterface</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/multiple_linear_regression.mjs~MultipleLinearRegression.html">MultipleLinearRegression</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/lib/regression.mjs~DeepLearningRegression.html">DeepLearningRegression</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/deep_learning.mjs</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { TensorScriptModelInterface, } from &apos;./model_interface&apos;;
+
+/**
+ * Deep Learning with Tensorflow
+ * @class BaseNeuralNetwork
+ * @implements {TensorScriptModelInterface}
+ */
+export class BaseNeuralNetwork extends TensorScriptModelInterface {
+  /**
+   * @param {{layers:Array&lt;Object&gt;,compile:Object,fit:Object}} options - neural network configuration and tensorflow model hyperparameters
+   * @param {{model:Object,tf:Object,}} properties - extra instance properties
+   */
+  constructor(options = {}, properties) {
+    const config = Object.assign({
+      layers: [],
+      compile: {
+        loss: &apos;meanSquaredError&apos;,
+        optimizer: &apos;adam&apos;,
+      },
+      fit: {
+        epochs: 100,
+        batchSize: 5,
+      },
+    }, options);
+    super(config, properties);
+    return this;
+  }
+  /**
+   * Adds dense layers to tensorflow model
+   * @abstract 
+   * @param {Array&lt;Array&lt;number&gt;&gt;} x_matrix - independent variables
+   * @param {Array&lt;Array&lt;number&gt;&gt;} y_matrix - dependent variables
+   * @param {Array&lt;Object&gt;} layers - model dense layer parameters
+   */
+  generateLayers(x_matrix, y_matrix, layers) {
+    throw new ReferenceError(&apos;generateLayers method is not implemented&apos;);
+  }
+  /**
+   * Asynchronously trains tensorflow model
+   * @override
+   * @param {Array&lt;Array&lt;number&gt;&gt;} x_matrix - independent variables
+   * @param {Array&lt;Array&lt;number&gt;&gt;} y_matrix - dependent variables
+   * @param {Array&lt;Object&gt;} layers - array of model dense layer parameters
+   * @param {Array&lt;Array&lt;number&gt;&gt;} x_text - validation data independent variables
+   * @param {Array&lt;Array&lt;number&gt;&gt;} y_text - validation data dependent variables
+   * @return {Object} returns trained tensorflow model 
+   */
+  async train(x_matrix, y_matrix, layers, x_test, y_test) {
+    const xShape = this.getInputShape(x_matrix);
+    const yShape = this.getInputShape(y_matrix);
+    const xs = this.tf.tensor(x_matrix, xShape);
+    const ys = this.tf.tensor(y_matrix, yShape);
+    this.xShape = xShape;
+    this.yShape = yShape;
+    this.model = this.tf.sequential();
+    this.generateLayers.call(this, x_matrix, y_matrix, layers || this.layers, x_test, y_test);
+    this.model.compile(this.settings.compile);
+    await this.model.fit(xs, ys, this.settings.fit);
+    xs.dispose();
+    ys.dispose();
+    return this.model;
+  }
+  /**
+   * Predicts new dependent variables
+   * @override
+   * @param {Array&lt;Array&lt;number&gt;&gt;|Array&lt;number&gt;} matrix - new test independent variables
+   * @param {Object} options - model prediction options
+   * @return {{data: Promise}} returns tensorflow prediction 
+   */
+  calculate(input_matrix, options) {
+    if (!input_matrix || Array.isArray(input_matrix)===false) throw new Error(&apos;invalid input matrix&apos;);
+    const predictionInput = (Array.isArray(input_matrix[ 0 ]))
+      ? input_matrix
+      : [
+        input_matrix,
+      ];
+    const predictionTensor = this.tf.tensor(predictionInput);
+    const prediction = this.model.predict(predictionTensor, options);
+    predictionTensor.dispose();
+    return prediction;
+  }
+}</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+
+
+</body></html>
