@@ -1,5 +1,6 @@
 import * as tensorflow from '@tensorflow/tfjs';
 import tensorflow__default, {  } from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-node';
 import range from 'lodash.range';
 
 /* fix for rollup */

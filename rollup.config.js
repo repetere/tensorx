@@ -7,34 +7,6 @@ import globals from 'rollup-plugin-node-globals';
 import pkg from './package.json';
 
 export default [
-  // browser-friendly UMD build
-  {
-    input: 'index.mjs',
-    output: {
-      exports: 'named',
-      file: pkg.browser,
-      name: 'tensorscript',
-      format: 'umd',
-    },
-    plugins: [
-      resolve({
-        preferBuiltins: true,
-      }), // so Rollup can find `ms`
-      commonjs({
-        namedExports: {
-          // left-hand side can be an absolute path, a path
-          // relative to the current directory, or the name
-          // of a module in node_modules
-          'node_modules/@tensorflow/tfjs/dist/tf.esm.js': [ 'tf', ],
-        },
-      }), // so Rollup can convert `ms` to an ES module
-      builtins({
-      }),
-      globals({
-      }),
-    ],
-  },
-
   // CommonJS (for Node) and ES module (for bundlers) build.
   // (We could have three entries in the configuration array
   // instead of two, but it's quicker to generate multiple
@@ -44,6 +16,7 @@ export default [
   {
     input: 'index.mjs',
     external: [
+      '@tensorflow/tfjs-node',
       '@tensorflow/tfjs',
       'lodash.range',
       // 'lodash.rangeright'

@@ -6,6 +6,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var tensorflow = require('@tensorflow/tfjs');
 var tensorflow__default = _interopDefault(tensorflow);
+require('@tensorflow/tfjs-node');
 var range = _interopDefault(require('lodash.range'));
 
 /* fix for rollup */

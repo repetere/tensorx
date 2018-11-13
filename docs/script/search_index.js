@@ -1,50 +1,50 @@
 window.esdocSearchIndex = [
   [
-    "tensorscript/lib/deep_learning.mjs~baseneuralnetwork",
+    "tensorscript-node/lib/deep_learning.mjs~baseneuralnetwork",
     "class/lib/deep_learning.mjs~BaseNeuralNetwork.html",
-    "<span>BaseNeuralNetwork</span> <span class=\"search-result-import-path\">tensorscript/lib/deep_learning.mjs</span>",
+    "<span>BaseNeuralNetwork</span> <span class=\"search-result-import-path\">tensorscript-node/lib/deep_learning.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/classification.mjs~deeplearningclassification",
+    "tensorscript-node/lib/classification.mjs~deeplearningclassification",
     "class/lib/classification.mjs~DeepLearningClassification.html",
-    "<span>DeepLearningClassification</span> <span class=\"search-result-import-path\">tensorscript/lib/classification.mjs</span>",
+    "<span>DeepLearningClassification</span> <span class=\"search-result-import-path\">tensorscript-node/lib/classification.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/regression.mjs~deeplearningregression",
+    "tensorscript-node/lib/regression.mjs~deeplearningregression",
     "class/lib/regression.mjs~DeepLearningRegression.html",
-    "<span>DeepLearningRegression</span> <span class=\"search-result-import-path\">tensorscript/lib/regression.mjs</span>",
+    "<span>DeepLearningRegression</span> <span class=\"search-result-import-path\">tensorscript-node/lib/regression.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/lstm_multivariate_time_series.mjs~lstmmultivariatetimeseries",
+    "tensorscript-node/lib/lstm_multivariate_time_series.mjs~lstmmultivariatetimeseries",
     "class/lib/lstm_multivariate_time_series.mjs~LSTMMultivariateTimeSeries.html",
-    "<span>LSTMMultivariateTimeSeries</span> <span class=\"search-result-import-path\">tensorscript/lib/lstm_multivariate_time_series.mjs</span>",
+    "<span>LSTMMultivariateTimeSeries</span> <span class=\"search-result-import-path\">tensorscript-node/lib/lstm_multivariate_time_series.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/lstm_time_series.mjs~lstmtimeseries",
+    "tensorscript-node/lib/lstm_time_series.mjs~lstmtimeseries",
     "class/lib/lstm_time_series.mjs~LSTMTimeSeries.html",
-    "<span>LSTMTimeSeries</span> <span class=\"search-result-import-path\">tensorscript/lib/lstm_time_series.mjs</span>",
+    "<span>LSTMTimeSeries</span> <span class=\"search-result-import-path\">tensorscript-node/lib/lstm_time_series.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/logistic_regression.mjs~logisticregression",
+    "tensorscript-node/lib/logistic_regression.mjs~logisticregression",
     "class/lib/logistic_regression.mjs~LogisticRegression.html",
-    "<span>LogisticRegression</span> <span class=\"search-result-import-path\">tensorscript/lib/logistic_regression.mjs</span>",
+    "<span>LogisticRegression</span> <span class=\"search-result-import-path\">tensorscript-node/lib/logistic_regression.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/multiple_linear_regression.mjs~multiplelinearregression",
+    "tensorscript-node/lib/multiple_linear_regression.mjs~multiplelinearregression",
     "class/lib/multiple_linear_regression.mjs~MultipleLinearRegression.html",
-    "<span>MultipleLinearRegression</span> <span class=\"search-result-import-path\">tensorscript/lib/multiple_linear_regression.mjs</span>",
+    "<span>MultipleLinearRegression</span> <span class=\"search-result-import-path\">tensorscript-node/lib/multiple_linear_regression.mjs</span>",
     "class"
   ],
   [
-    "tensorscript/lib/model_interface.mjs~tensorscriptmodelinterface",
+    "tensorscript-node/lib/model_interface.mjs~tensorscriptmodelinterface",
     "class/lib/model_interface.mjs~TensorScriptModelInterface.html",
-    "<span>TensorScriptModelInterface</span> <span class=\"search-result-import-path\">tensorscript/lib/model_interface.mjs</span>",
+    "<span>TensorScriptModelInterface</span> <span class=\"search-result-import-path\">tensorscript-node/lib/model_interface.mjs</span>",
     "class"
   ],
   [
