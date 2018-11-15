@@ -1,6 +1,6 @@
 {
   "name": "tensorscript-node",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Deep Learning Classification, LSTM Time Series, Regression and Multi-Layered Perceptrons with Tensorflow",
   "main": "index.mjs",
   "module": "index.mjs",
@@ -62,7 +62,7 @@
     "esdoc-standard-plugin": "^1.0.0",
     "esm": "^3.0.72",
     "mocha": "^5.2.0",
-    "modelscript": "^2.0.10",
+    "modelscript": "^2.1.0",
     "nyc": "^12.0.2",
     "rollup": "^0.63.4",
     "rollup-plugin-alias": "^1.4.0",
